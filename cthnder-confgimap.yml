@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: acos-config  
+data:
+  startup-config: |-
+       !
+       class-list CL1
+         10.0.0.128/25 lsn-lid 1
+       !
+       ip dns primary 8.8.8.8
+       !
+       hostname POD2
+       !
+       glm use-mgmt-port
+       glm enable-requests
+       glm allocate-bandwidth 500
+       glm token vTh0097f6299
+       !
+       interface ethernet 1
+         name OUTSIDE
+         enable
+         ip nat outside
+       !
+       interface ethernet 2
+         name INSIDE
+         enable
+         ip nat inside
+       !
+       cgnv6 lsn inside source class-list CL1
+       !
+       cgnv6 nat pool POOL1 100.0.0.254 netmask /32
+       !
+       cgnv6 lsn-lid 1
+         source-nat-pool POOL1
+

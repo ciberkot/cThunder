@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cthunder2
+spec:
+  selector:
+    matchLabels:
+      run: cthunder
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: cthunder
+      annotations:
+        k8s.v1.cni.cncf.io/networks: '[
+            { "name" : "server-bridge" },
+            { "name" : "client-bridge" }
+        ]'
+    spec:
+      volumes:
+      - name: tmp-cfg
+        configMap:
+           name: acos-config  
+           items:
+           - key: startup-config
+             path: slb.cfg
+      containers:
+      - name: cthunder3
+        image: 172.31.31.40:5000/5_0_0_p1_74
+        imagePullPolicy: Never
+        env:
+        - name: ACOS_CTH_SUPPORT_SRIOV
+          value: "n"
+        - name: ACOS_CTH_SUPPORT_MGMT
+          value: "y"
+        - name: ACOS_CTH_SUPPORT_VETH
+          value: "y"
+        - name: ACOS_CTH_CONFIG_PATH
+          value: "/a10data/startup.cfg"   
+        volumeMounts:
+        - mountPath: "/tmp/slb.cfg"
+          subPath: slb.cfg
+          name: tmp-cfg
+        resources:
+          requests:
+            memory: 4Gi
+            cpu: "1"
+          limits:
+            memory: 4Gi
+            cpu: "1"
+        volumeMounts:
+        securityContext:
+          privileged: true
+          runAsUser: 0
+
